@@ -11,20 +11,17 @@
       --muted:#94a3b8;
       --text:#e5e7eb;
       --accent:#22c55e;
-      --accent-2:#3b82f6;
-      --danger:#ef4444;
       --border:#1f2937;
-      --hover:#0b1224;
-      --chip:#0b1224;
       --shadow:0 10px 30px rgba(0,0,0,.35);
       --radius:14px;
       --cell-radius:10px;
+      --grid-gap:8px;
     }
     * { box-sizing: border-box }
     html,body { height:100% }
     body{
       margin:0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans";
       color:var(--text);
       background: radial-gradient(1200px 600px at 30% -10%, #1e293b 0%, #0f172a 52%, #0b1022 100%);
       line-height:1.45;
@@ -34,10 +31,10 @@
       backdrop-filter:saturate(140%) blur(10px);
       background:linear-gradient(180deg, rgba(15,23,42,0.9) 0%, rgba(15,23,42,0.6) 100%);
       border-bottom:1px solid var(--border);
+      padding:16px 20px;
     }
-    .wrap{ max-width:1100px; margin:0 auto; padding:16px 20px; }
-    h1{ margin:6px 0 2px; font-size:22px; }
-    .sub{ color:var(--muted); font-size:14px; margin-top:6px }
+    h1{ margin:6px 0 2px; font-size:22px; letter-spacing:.2px; }
+    .sub{ color:var(--muted); font-size:13px }
     .toolbar{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:12px }
     button, .button{
       appearance:none; border:1px solid var(--border); color:var(--text);
@@ -51,136 +48,138 @@
     .accent{ border-color:rgba(59,130,246,.35) }
     .danger{ border-color:rgba(239,68,68,.35) }
     .ghost { background:transparent; box-shadow:none }
-    input, select{
+    input[type="text"], input[type="time"], select{
       width:100%; padding:10px 12px; border-radius:10px;
       border:1px solid var(--border); background:#0b1224; color:var(--text);
       outline:none;
     }
-    .grid{ margin:22px auto; width:100%; display:grid; gap:8px;
-      grid-template-columns: 120px repeat(5, 1fr); }
+    input[type="color"]{ width:48px; height:36px; border:none; background:transparent; padding:0; cursor:pointer }
+    .grid{
+      margin:22px auto; width:100%; display:grid; gap:var(--grid-gap);
+      grid-template-columns: 120px repeat(5, 1fr);
+    }
     .cell, .head, .time-col{
       background:linear-gradient(180deg,#0f172a,#0b1224);
-      border:1px solid var(--border); border-radius:var(--cell-radius);
-      padding:10px; min-height:68px; position:relative;
+      border:1px solid var(--border);
+      border-radius:var(--cell-radius);
+      padding:10px; min-height:68px; position:relative; overflow:hidden;
     }
-    .head{ font-weight:700; text-align:center; min-height:44px;
-      display:flex; align-items:center; justify-content:center; }
-    .lesson{ background:var(--chip); border:1px solid var(--border);
-      padding:10px; border-radius:8px; box-shadow: inset 0 1px 0 rgba(255,255,255,.03); }
-    .lesson strong{ display:block; font-size:14px; margin-bottom:4px }
-    .lesson small{ font-size:12px; color:var(--muted) }
-    @media print{
-      header, .toolbar{ display:none !important }
-      body{ background:white; color:black }
-      .cell, .head{ border-color:#ddd; background:white; color:black }
-      .lesson{ background:#f7f7f7; border-color:#ddd; color:black }
-    }
+    .head{ font-weight:700; text-align:center; display:flex; align-items:center; justify-content:center; }
+    .time-col{ display:flex; flex-direction:column; gap:6px }
+    .period{ font-weight:700; font-size:13px; }
+    .lesson{ display:flex; flex-direction:column; gap:6px; background:var(--bg); border-radius:8px; padding:10px; height:100%; box-shadow: inset 0 1px 0 rgba(255,255,255,.03); }
+    .current-lesson{ font-size:36px; text-align:center; margin:20px 0; color:var(--accent); display:flex; justify-content:center; align-items:center; gap:20px }
+    .current-lesson button{ font-size:20px; }
+    .modal{ width:min(680px, 92vw); background:linear-gradient(180deg,#0b1224,#0a0f20); border:1px solid var(--border); border-radius:16px; box-shadow:0 20px 60px rgba(0,0,0,.6); overflow:hidden; }
+    .modal header{ border-bottom:1px solid var(--border); }
+    .wrap{ max-width:1100px; margin:0 auto; }
   </style>
 </head>
 <body>
   <header>
-    <div class="wrap">
-      <h1>Stundenplan</h1>
-      <div class="sub" id="currentLessonText">Lade aktuellen Stand …</div>
-      <div class="toolbar">
-        <button id="btnReset" class="danger">Plan zurücksetzen</button>
-        <button onclick="window.print()">Drucken</button>
-      </div>
-    </div>
+    <h1>Stundenplan</h1>
+    <div class="sub">Automatische Anzeige der aktuellen Stunde</div>
   </header>
 
   <main class="wrap">
+    <div class="current-lesson" id="currentLesson" style="display:none">
+      <span id="currentSubject"></span>
+      <button onclick="hideCurrent()">×</button>
+    </div>
+
+    <div class="toolbar">
+      <button class="accent" onclick="showSetup()">Setup Fächer für Woche</button>
+    </div>
+
     <div id="grid" class="grid"></div>
   </main>
 
+  <dialog id="setupDialog">
+    <form method="dialog" class="modal">
+      <header><h2>Fächer für die Woche eintragen</h2></header>
+      <div style="padding:16px">
+        <div id="setupGrid"></div>
+        <div style="margin-top:12px; display:flex; justify-content:flex-end; gap:10px">
+          <button value="cancel" class="ghost">Abbrechen</button>
+          <button value="ok" class="accent" onclick="saveSetup()">Speichern</button>
+        </div>
+      </div>
+    </form>
+  </dialog>
+
   <script>
-    const days = ["Montag","Dienstag","Mittwoch","Donnerstag","Freitag"];
+    const days = ['Montag','Dienstag','Mittwoch','Donnerstag','Freitag'];
     const hours = [8,9,10,11,12,13];
+    let schedule = JSON.parse(localStorage.getItem('schedule')) || {};
 
-    function firstLoginSetup() {
-      if (!localStorage.getItem("schedule")) {
-        alert("Willkommen! Bitte gib deinen Stundenplan ein (Montag–Freitag, 8–13 Uhr).");
-        let schedule = {};
-        days.forEach(day => {
-          schedule[day] = {};
-          hours.forEach(hour => {
-            let subj = prompt(`${day}, ${hour}:00 Uhr – Fach eingeben (z. B. Mathe, frei)`);
-            let teacher = subj ? prompt(`Lehrkraft für ${subj} (${day}, ${hour}:00 Uhr):`) : "";
-            let room = subj ? prompt(`Raum für ${subj} (${day}, ${hour}:00 Uhr):`) : "";
-            schedule[day][hour] = { subject: subj || "frei", teacher, room };
-          });
+    function showSetup(){
+      const setupGrid = document.getElementById('setupGrid');
+      setupGrid.innerHTML = '';
+      days.forEach(day => {
+        hours.forEach(hour => {
+          const key = day+'-'+hour;
+          const val = schedule[key] || '';
+          const input = document.createElement('input');
+          input.type='text';
+          input.placeholder=`${day} ${hour}:00`; 
+          input.value = val;
+          input.id=key;
+          setupGrid.appendChild(input);
         });
-        localStorage.setItem("schedule", JSON.stringify(schedule));
-      }
+      });
+      document.getElementById('setupDialog').showModal();
     }
 
-    function getSchedule() {
-      return JSON.parse(localStorage.getItem("schedule")) || {};
+    function saveSetup(){
+      days.forEach(day => {
+        hours.forEach(hour => {
+          const key = day+'-'+hour;
+          const val = document.getElementById(key).value;
+          schedule[key]=val;
+        });
+      });
+      localStorage.setItem('schedule', JSON.stringify(schedule));
+      document.getElementById('setupDialog').close();
+      renderGrid();
+      updateCurrent();
     }
 
-    function renderGrid() {
-      const grid = document.getElementById("grid");
-      grid.innerHTML = "";
-      // Kopfzeile
-      grid.appendChild(makeCell("Zeit", "head"));
-      days.forEach(d => grid.appendChild(makeCell(d, "head")));
-      // Stunden
-      hours.forEach(h => {
-        grid.appendChild(makeCell(h+":00", "head"));
-        days.forEach(d => {
-          let entry = getSchedule()[d][h];
-          let div = document.createElement("div");
-          div.className = "cell";
-          if (entry && entry.subject && entry.subject !== "frei") {
-            div.innerHTML = `<div class="lesson">
-              <strong>${entry.subject}</strong>
-              <small>${entry.teacher || ""} ${entry.room || ""}</small>
-            </div>`;
-          } else {
-            div.innerHTML = `<div class="lesson"><small>frei</small></div>`;
-          }
-          grid.appendChild(div);
+    function renderGrid(){
+      const grid = document.getElementById('grid');
+      grid.innerHTML='';
+      grid.innerHTML += '<div class="head"></div>' + days.map(d=>`<div class="head">${d}</div>`).join('');
+      hours.forEach(hour => {
+        grid.innerHTML += `<div class="time-col"><div class="period">${hour}:00</div></div>`;
+        days.forEach(day=>{
+          const key = day+'-'+hour;
+          const val = schedule[key]||'';
+          grid.innerHTML += `<div class="cell">${val}</div>`;
         });
       });
     }
 
-    function makeCell(text, cls="cell") {
-      let div = document.createElement("div");
-      div.className = cls;
-      div.textContent = text;
-      return div;
+    function updateCurrent(){
+      const now = new Date();
+      const day = days[now.getDay()-1];
+      const hour = now.getHours();
+      const key = day+'-'+hour;
+      const current = schedule[key];
+      const el = document.getElementById('currentLesson');
+      if(current){
+        document.getElementById('currentSubject').textContent=current;
+        el.style.display='flex';
+      } else {
+        el.style.display='none';
+      }
     }
 
-    function getCurrentLesson() {
-      let schedule = getSchedule();
-      let now = new Date();
-      let weekday = now.getDay(); // 1=Mo
-      let hour = now.getHours();
-      if (weekday < 1 || weekday > 5 || hour < 8 || hour > 13) {
-        return "Gerade keine Unterrichtszeit.";
-      }
-      let dayName = days[weekday-1];
-      let entry = schedule[dayName][hour];
-      if (!entry || entry.subject==="frei") {
-        return `Heute ist ${dayName}, ${hour}:00 Uhr – keine Stunde.`;
-      }
-      return `Heute ist ${dayName}, ${hour}:00 Uhr – Fach: ${entry.subject}` +
-        (entry.teacher? ` bei ${entry.teacher}`:"") +
-        (entry.room? ` in Raum ${entry.room}`:"") + ".";
+    function hideCurrent(){
+      document.getElementById('currentLesson').style.display='none';
     }
 
-    // Initialisierung
-    firstLoginSetup();
     renderGrid();
-    document.getElementById("currentLessonText").innerText = getCurrentLesson();
-
-    // Reset
-    document.getElementById("btnReset").addEventListener("click", () => {
-      if (confirm("Plan wirklich zurücksetzen?")) {
-        localStorage.removeItem("schedule");
-        location.reload();
-      }
-    });
+    updateCurrent();
+    setInterval(updateCurrent,60000); // jede Minute aktualisieren
   </script>
 </body>
 </html>
