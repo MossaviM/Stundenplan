@@ -6,27 +6,25 @@
   <title>Stundenplan</title>
   <style>
     :root{
-      --bg:#0f172a;           /* slate-900 */
-      --panel:#111827;        /* gray-900 */
-      --muted:#94a3b8;        /* slate-400 */
-      --text:#e5e7eb;         /* gray-200 */
-      --accent:#22c55e;       /* green-500 */
-      --accent-2:#3b82f6;     /* blue-500 */
-      --danger:#ef4444;       /* red-500 */
-      --border:#1f2937;       /* gray-800 */
+      --bg:#0f172a;
+      --panel:#111827;
+      --muted:#94a3b8;
+      --text:#e5e7eb;
+      --accent:#22c55e;
+      --accent-2:#3b82f6;
+      --danger:#ef4444;
+      --border:#1f2937;
       --hover:#0b1224;
       --chip:#0b1224;
       --shadow:0 10px 30px rgba(0,0,0,.35);
       --radius:14px;
-      --radius-sm:10px;
-      --grid-gap:8px;
       --cell-radius:10px;
     }
     * { box-sizing: border-box }
     html,body { height:100% }
     body{
       margin:0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji","Segoe UI Emoji", "Segoe UI Symbol";
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial;
       color:var(--text);
       background: radial-gradient(1200px 600px at 30% -10%, #1e293b 0%, #0f172a 52%, #0b1022 100%);
       line-height:1.45;
@@ -37,16 +35,10 @@
       background:linear-gradient(180deg, rgba(15,23,42,0.9) 0%, rgba(15,23,42,0.6) 100%);
       border-bottom:1px solid var(--border);
     }
-    .wrap{
-      max-width:1100px; margin:0 auto; padding:16px 20px;
-    }
-    h1{
-      margin:6px 0 2px; font-size:22px; letter-spacing:.2px;
-    }
-    .sub{ color:var(--muted); font-size:13px }
-    .toolbar{
-      display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:12px
-    }
+    .wrap{ max-width:1100px; margin:0 auto; padding:16px 20px; }
+    h1{ margin:6px 0 2px; font-size:22px; }
+    .sub{ color:var(--muted); font-size:14px; margin-top:6px }
+    .toolbar{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:12px }
     button, .button{
       appearance:none; border:1px solid var(--border); color:var(--text);
       background:linear-gradient(180deg,#111827,#0b1224);
@@ -59,104 +51,29 @@
     .accent{ border-color:rgba(59,130,246,.35) }
     .danger{ border-color:rgba(239,68,68,.35) }
     .ghost { background:transparent; box-shadow:none }
-    input[type="text"], input[type="time"], select{
+    input, select{
       width:100%; padding:10px 12px; border-radius:10px;
       border:1px solid var(--border); background:#0b1224; color:var(--text);
       outline:none;
     }
-    input[type="color"]{ width:48px; height:36px; border:none; background:transparent; padding:0; cursor:pointer }
-    .grid{
-      margin:22px auto; width:100%;
-      display:grid; gap:var(--grid-gap);
-      grid-template-columns: 120px repeat(5, 1fr);
-    }
+    .grid{ margin:22px auto; width:100%; display:grid; gap:8px;
+      grid-template-columns: 120px repeat(5, 1fr); }
     .cell, .head, .time-col{
       background:linear-gradient(180deg,#0f172a,#0b1224);
-      border:1px solid var(--border);
-      border-radius:var(--cell-radius);
-      padding:10px; min-height:68px;
-      position:relative; overflow:hidden;
+      border:1px solid var(--border); border-radius:var(--cell-radius);
+      padding:10px; min-height:68px; position:relative;
     }
-    .head{
-      font-weight:700; text-align:center; min-height:44px;
-      display:flex; align-items:center; justify-content:center;
-    }
-    .time-col{ min-height:auto; display:flex; flex-direction:column; gap:6px }
-    .period{
-      font-weight:700; font-size:13px;
-    }
-    .time{ color:var(--muted); font-size:12px }
-    .lesson{
-      display:flex; flex-direction:column; gap:6px;
-      background:var(--chip); border:1px solid var(--border);
-      padding:10px; border-radius:8px; height:100%;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
-    }
-    .lesson .subject{
-      display:flex; align-items:center; gap:8px; font-weight:700;
-      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-    }
-    .dot{
-      width:10px; height:10px; border-radius:50%; border:1px solid rgba(255,255,255,.2)
-    }
-    .meta{
-      display:flex; gap:10px; flex-wrap:wrap; font-size:12px; color:var(--muted)
-    }
-    .meta span{ display:inline-flex; gap:6px; align-items:center }
-    .cell button.small{
-      position:absolute; right:8px; bottom:8px;
-      font-size:12px; padding:6px 8px; border-radius:8px; box-shadow:none;
-    }
-    .empty{
-      display:grid; place-items:center; color:var(--muted); font-size:12px; height:100%;
-      border:1px dashed #23304a; background:transparent;
-    }
-    .chips{
-      display:flex; flex-wrap:wrap; gap:8px; margin-top:6px;
-    }
-    .chip{
-      padding:6px 10px; font-size:12px; border-radius:999px; background:#0b1224; border:1px solid var(--border)
-    }
-    .panel{
-      background:linear-gradient(180deg,#0b1224,#0a1020);
-      border:1px solid var(--border); border-radius:var(--radius); padding:14px; box-shadow:var(--shadow)
-    }
-    .flex{ display:flex; gap:12px; flex-wrap:wrap }
-    .col{ flex:1 1 240px; min-width:240px }
-    dialog{
-      border:none; padding:0; background:transparent;
-    }
-    .modal{
-      width:min(680px, 92vw);
-      background:linear-gradient(180deg,#0b1224,#0a0f20);
-      border:1px solid var(--border); border-radius:16px;
-      box-shadow:0 20px 60px rgba(0,0,0,.6);
-      overflow:hidden;
-    }
-    .modal header{
-      position:unset; border-bottom:1px solid var(--border); background:transparent; backdrop-filter:none;
-    }
-    .modal .wrap{ padding:14px 16px }
-    .modal h2{ margin:6px 0 2px; font-size:18px }
-    .grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:12px }
-    .actions{ display:flex; justify-content:flex-end; gap:10px; padding:12px 16px; border-top:1px solid var(--border) }
-
-    .legend{ display:flex; align-items:center; gap:8px }
-    .legend .dot{ width:12px; height:12px }
-
-    @media (max-width: 820px){
-      .grid{ grid-template-columns: 96px repeat(5, 1fr) }
-      .cell{ min-height:76px }
-    }
-
-    /* Print */
+    .head{ font-weight:700; text-align:center; min-height:44px;
+      display:flex; align-items:center; justify-content:center; }
+    .lesson{ background:var(--chip); border:1px solid var(--border);
+      padding:10px; border-radius:8px; box-shadow: inset 0 1px 0 rgba(255,255,255,.03); }
+    .lesson strong{ display:block; font-size:14px; margin-bottom:4px }
+    .lesson small{ font-size:12px; color:var(--muted) }
     @media print{
-      header, .toolbar, dialog{ display:none !important }
+      header, .toolbar{ display:none !important }
       body{ background:white; color:black }
-      .grid{ gap:6px }
-      .cell, .head, .time-col{ border-color:#ddd; background:white; box-shadow:none; color:black }
+      .cell, .head{ border-color:#ddd; background:white; color:black }
       .lesson{ background:#f7f7f7; border-color:#ddd; color:black }
-      .meta{ color:#333 }
     }
   </style>
 </head>
@@ -164,94 +81,106 @@
   <header>
     <div class="wrap">
       <h1>Stundenplan</h1>
-      <div class="sub">Klicke auf ein Feld, um eine Stunde zu setzen oder zu bearbeiten. Alles wird automatisch gespeichert.</div>
+      <div class="sub" id="currentLessonText">Lade aktuellen Stand …</div>
       <div class="toolbar">
-        <button class="accent" id="btnAddSubject">+ Fach hinzufügen</button>
-        <button id="btnExport">Export (JSON)</button>
-        <label class="button ghost" for="importFile">Import (JSON)</label>
-        <input id="importFile" type="file" accept="application/json" style="display:none">
-        <button id="btnClear" class="danger">Zurücksetzen</button>
+        <button id="btnReset" class="danger">Plan zurücksetzen</button>
         <button onclick="window.print()">Drucken</button>
       </div>
     </div>
   </header>
 
   <main class="wrap">
-    <div class="panel">
-      <div class="flex">
-        <div class="col">
-          <label>Stunden (Uhrzeiten anpassen):</label>
-          <div id="periodEditor"></div>
-        </div>
-        <div class="col">
-          <label>Fächer:</label>
-          <div id="subjectChips" class="chips"></div>
-        </div>
-      </div>
-    </div>
-
-    <div id="grid" class="grid" aria-live="polite" style="margin-top:18px"></div>
+    <div id="grid" class="grid"></div>
   </main>
 
-  <!-- Lesson modal -->
-  <dialog id="lessonDialog">
-    <form method="dialog" class="modal">
-      <header class="wrap">
-        <h2>Stunde bearbeiten</h2>
-        <div class="sub">Wähle ein Fach und ergänze Details</div>
-      </header>
-      <div class="wrap">
-        <div class="grid-2">
-          <label>Fach
-            <select id="dlgSubject"></select>
-          </label>
-          <label>Notiz (optional)
-            <input type="text" id="dlgNote" placeholder="z. B. Hausaufgabe abgeben" />
-          </label>
-        </div>
-      </div>
-      <div class="actions">
-        <button value="delete" class="danger">Löschen</button>
-        <button value="cancel" class="ghost">Abbrechen</button>
-        <button value="ok" class="accent">Speichern</button>
-      </div>
-    </form>
-  </dialog>
-
-  <!-- Subject modal -->
-  <dialog id="subjectDialog">
-    <form method="dialog" class="modal">
-      <header class="wrap">
-        <h2>Neues Fach</h2>
-        <div class="sub">Name, Lehrkraft, Raum und Farbe festlegen</div>
-      </header>
-      <div class="wrap">
-        <div class="grid-2">
-          <label>Fachname
-            <input type="text" id="subjName" placeholder="Mathematik" required />
-          </label>
-          <label>Farbe
-            <input type="color" id="subjColor" value="#3b82f6" />
-          </label>
-        </div>
-        <div class="grid-2" style="margin-top:10px">
-          <label>Lehrkraft
-            <input type="text" id="subjTeacher" placeholder="z. B. Frau Müller" />
-          </label>
-          <label>Raum
-            <input type="text" id="subjRoom" placeholder="z. B. 204" />
-          </label>
-        </div>
-      </div>
-      <div class="actions">
-        <button value="cancel" class="ghost">Abbrechen</button>
-        <button value="ok" class="accent">Hinzufügen</button>
-      </div>
-    </form>
-  </dialog>
-
   <script>
-    // ... (JS code from previous message, unchanged)
+    const days = ["Montag","Dienstag","Mittwoch","Donnerstag","Freitag"];
+    const hours = [8,9,10,11,12,13];
+
+    function firstLoginSetup() {
+      if (!localStorage.getItem("schedule")) {
+        alert("Willkommen! Bitte gib deinen Stundenplan ein (Montag–Freitag, 8–13 Uhr).");
+        let schedule = {};
+        days.forEach(day => {
+          schedule[day] = {};
+          hours.forEach(hour => {
+            let subj = prompt(`${day}, ${hour}:00 Uhr – Fach eingeben (z. B. Mathe, frei)`);
+            let teacher = subj ? prompt(`Lehrkraft für ${subj} (${day}, ${hour}:00 Uhr):`) : "";
+            let room = subj ? prompt(`Raum für ${subj} (${day}, ${hour}:00 Uhr):`) : "";
+            schedule[day][hour] = { subject: subj || "frei", teacher, room };
+          });
+        });
+        localStorage.setItem("schedule", JSON.stringify(schedule));
+      }
+    }
+
+    function getSchedule() {
+      return JSON.parse(localStorage.getItem("schedule")) || {};
+    }
+
+    function renderGrid() {
+      const grid = document.getElementById("grid");
+      grid.innerHTML = "";
+      // Kopfzeile
+      grid.appendChild(makeCell("Zeit", "head"));
+      days.forEach(d => grid.appendChild(makeCell(d, "head")));
+      // Stunden
+      hours.forEach(h => {
+        grid.appendChild(makeCell(h+":00", "head"));
+        days.forEach(d => {
+          let entry = getSchedule()[d][h];
+          let div = document.createElement("div");
+          div.className = "cell";
+          if (entry && entry.subject && entry.subject !== "frei") {
+            div.innerHTML = `<div class="lesson">
+              <strong>${entry.subject}</strong>
+              <small>${entry.teacher || ""} ${entry.room || ""}</small>
+            </div>`;
+          } else {
+            div.innerHTML = `<div class="lesson"><small>frei</small></div>`;
+          }
+          grid.appendChild(div);
+        });
+      });
+    }
+
+    function makeCell(text, cls="cell") {
+      let div = document.createElement("div");
+      div.className = cls;
+      div.textContent = text;
+      return div;
+    }
+
+    function getCurrentLesson() {
+      let schedule = getSchedule();
+      let now = new Date();
+      let weekday = now.getDay(); // 1=Mo
+      let hour = now.getHours();
+      if (weekday < 1 || weekday > 5 || hour < 8 || hour > 13) {
+        return "Gerade keine Unterrichtszeit.";
+      }
+      let dayName = days[weekday-1];
+      let entry = schedule[dayName][hour];
+      if (!entry || entry.subject==="frei") {
+        return `Heute ist ${dayName}, ${hour}:00 Uhr – keine Stunde.`;
+      }
+      return `Heute ist ${dayName}, ${hour}:00 Uhr – Fach: ${entry.subject}` +
+        (entry.teacher? ` bei ${entry.teacher}`:"") +
+        (entry.room? ` in Raum ${entry.room}`:"") + ".";
+    }
+
+    // Initialisierung
+    firstLoginSetup();
+    renderGrid();
+    document.getElementById("currentLessonText").innerText = getCurrentLesson();
+
+    // Reset
+    document.getElementById("btnReset").addEventListener("click", () => {
+      if (confirm("Plan wirklich zurücksetzen?")) {
+        localStorage.removeItem("schedule");
+        location.reload();
+      }
+    });
   </script>
 </body>
 </html>
