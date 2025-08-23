@@ -1,136 +1,481 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Oberstufe Lernspiel</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-<style>
-body, html {margin:0; padding:0; font-family:'Inter',sans-serif; background:#f5f6fa; color:#333;}
-* {box-sizing:border-box;}
-header {background:#4a90e2; color:white; padding:1rem 2rem; font-size:1.5rem; font-weight:600; text-align:center; box-shadow:0 2px 10px rgba(0,0,0,0.1);}
-.container {display:flex; min-height:calc(100vh - 64px);}
-.sidebar {width:240px; background:#fff; border-right:1px solid #ddd; padding:1rem 0; display:flex; flex-direction:column; box-shadow:2px 0 10px rgba(0,0,0,0.05);}
-.sidebar h3 {margin:1rem; font-size:1rem; color:#666; text-transform:uppercase; letter-spacing:0.5px;}
-.sidebar button {background:none; border:none; padding:0.75rem 1.5rem; text-align:left; cursor:pointer; font-size:1rem; color:#333; width:100%; transition:0.3s; border-left:3px solid transparent;}
-.sidebar button:hover, .sidebar button.active {background:#f0f4ff; border-left:3px solid #4a90e2;}
-.main {flex:1; padding:2rem; overflow-y:auto;}
-.card {background:#fff; border-radius:12px; padding:1.5rem; margin-bottom:1.5rem; box-shadow:0 5px 15px rgba(0,0,0,0.05); transition:0.3s; position:relative;}
-.card.locked {opacity:0.5;}
-.card h4 {margin-top:0; margin-bottom:0.5rem; font-size:1.2rem; color:#4a90e2;}
-.card p {margin:0.5rem 0; line-height:1.5;}
-.card input, .card select {width:100%; padding:0.5rem; margin:0.5rem 0; border:1px solid #ccc; border-radius:8px; font-size:1rem;}
-.card button {background:#4a90e2; color:white; border:none; border-radius:8px; padding:0.5rem 1rem; cursor:pointer; transition:0.3s; margin-top:0.5rem;}
-.card button:hover {background:#357ab8;}
-.progress-bar {width:100%; background:#eee; border-radius:12px; overflow:hidden; margin-top:1rem;}
-.progress {width:0%; height:20px; background:#4a90e2; text-align:center; color:white; font-weight:600; transition:0.5s;}
-.level-badge {position:absolute; top:15px; right:15px; background:#ffcc00; color:#333; padding:0.3rem 0.6rem; border-radius:50%; font-weight:600;}
-canvas {width:100%; height:300px; border-radius:12px; margin-top:1rem; background:#f9f9f9;}
-@media(max-width:900px){.container{flex-direction:column;}.sidebar{width:100%; display:flex; flex-direction:row; overflow-x:auto;} .sidebar button{flex:1 0 auto; text-align:center; border-left:none; border-bottom:3px solid transparent;} .sidebar button:hover{border-bottom:3px solid #4a90e2;}}
-</style>
-</head>
-<body>
-<header>🎓 Oberstufe Lernspiel</header>
-<div class="container">
-  <div class="sidebar" id="sidebar">
-    <h3>11. Klasse</h3>
-    <button onclick="ladeFach('11','mathe')">Mathematik</button>
-    <button onclick="ladeFach('11','physik')">Physik</button>
-    <button onclick="ladeFach('11','biologie')">Biologie</button>
-    <button onclick="ladeFach('11','chemie')">Chemie</button>
-    <button onclick="ladeFach('11','geschichte')">Geschichte</button>
-    <button onclick="ladeFach('11','englisch')">Englisch</button>
+import React, { useEffect, useMemo, useState } from "react";
+import { Brain, GraduationCap, Sparkles, Gamepad2, BookOpenText, MessageSquare, LayoutGrid, ChevronRight, Search, Rocket, CheckCircle2, XCircle, Trophy, Lightbulb, Clock3, Layers } from "lucide-react";
 
-    <h3>12. Klasse</h3>
-    <button onclick="ladeFach('12','mathe')">Mathematik</button>
-    <button onclick="ladeFach('12','physik')">Physik</button>
-    <button onclick="ladeFach('12','biologie')">Biologie</button>
-    <button onclick="ladeFach('12','chemie')">Chemie</button>
-    <button onclick="ladeFach('12','geschichte')">Geschichte</button>
-    <button onclick="ladeFach('12','englisch')">Englisch</button>
+// ----------------------------
+// DarkLearn — Single-file React App (Dark Mode)
+// Audience: Klasse 10–13
+// Pages: Dashboard, Lernen, Spiele, Quiz, KI-Assistent
+// Tech: React + Tailwind (no external UI kit required)
+// ----------------------------
 
-    <h3>13. Klasse</h3>
-    <button onclick="ladeFach('13','mathe')">Mathematik</button>
-    <button onclick="ladeFach('13','physik')">Physik</button>
-    <button onclick="ladeFach('13','biologie')">Biologie</button>
-    <button onclick="ladeFach('13','chemie')">Chemie</button>
-    <button onclick="ladeFach('13','geschichte')">Geschichte</button>
-    <button onclick="ladeFach('13','englisch')">Englisch</button>
-  </div>
-
-  <div class="main" id="main">
-    <div class="card">
-      <h4>Willkommen!</h4>
-      <p>Wähle links deine Klasse und dein Fach aus, um Level freizuschalten und interaktiv zu lernen. Jede Aufgabe ist ein Level und schaltet neue frei!</p>
-    </div>
-  </div>
-</div>
-
-<script>
-// Daten mit Level-Struktur
-const faecher = {
-  mathe: {titel:"Mathematik", aufgaben:[
-    {text:"Löse die Gleichung ax+b=c", typ:"gleichung"},
-    {text:"Berechne die Ableitung von f(x)=ax^n", typ:"ableitung"},
-    {text:"Berechne das Integral von f(x)=ax^n", typ:"integral"}
-  ]},
-  physik: {titel:"Physik", aufgaben:[
-    {text:"Berechne die Kraft F=m*a", typ:"kraft"},
-    {text:"Geschwindigkeit v=s/t", typ:"geschwindigkeit"},
-    {text:"Energie E=m*c^2", typ:"energie"}
-  ]},
-  biologie: {titel:"Biologie", aufgaben:[
-    {text:"Erkläre die Zellteilung", typ:"text"},
-    {text:"Nenne die DNA-Basen", typ:"text"},
-    {text:"Genetische Vererbung", typ:"text"}
-  ]},
-  chemie: {titel:"Chemie", aufgaben:[
-    {text:"Reaktionsgleichung: HCl + NaOH", typ:"reaktion"},
-    {text:"Stöchiometrische Berechnung", typ:"text"},
-    {text:"Säuren und Basen", typ:"text"}
-  ]}
+// Small helpers
+const cx = (...classes) => classes.filter(Boolean).join(" ");
+const save = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+const load = (k, d) => {
+  try { const v = JSON.parse(localStorage.getItem(k)); return v ?? d; } catch { return d; }
 };
 
-// Fortschritt speichern
-let progressData = {}; // z.B. progressData["11-mathe"] = 0;
+// Curriculum (DE) — sample topics for 10–13 (erweitere nach Bedarf)
+const CURRICULUM = {
+  10: {
+    Mathematik: ["Lineare Funktionen", "Quadratische Funktionen", "Stochastik Grundlagen", "Geometrie – Trigonometrie"],
+    Deutsch: ["Textanalyse", "Erörterung", "Sprachgeschichte", "Literatur der Moderne"],
+    Englisch: ["Tenses Overview", "Essay Writing", "Globalization", "Media Literacy"],
+    Biologie: ["Zelle & Zellteilung", "Genetik Basics", "Evolution – Grundlagen"],
+    Physik: ["Mechanik – Grundlagen", "Elektrizität Basics", "Optik"],
+    Chemie: ["Stoffaufbau", "Reaktionsgleichungen", "Säuren & Basen"],
+    Geschichte: ["Industrialisierung", "Erster Weltkrieg", "Weimarer Republik"],
+  },
+  11: {
+    Mathematik: ["Analysis I (Ableitung)", "Vektorgeometrie I", "Wahrscheinlichkeitsrechnung"],
+    Deutsch: ["Interpretation Lyrik", "Rhetorik", "Argumentation vertieft"],
+    Englisch: ["Advanced Writing", "The American Dream", "Narrative Techniques"],
+    Biologie: ["DNA & Proteinsynthese", "Enzyme", "Ökologie"],
+    Physik: ["Dynamik & Energie", "Elektrisches Feld", "Wellenlehre"],
+    Chemie: ["Redox", "Organische Chemie – Alkane/Alkene", "Chemisches Gleichgewicht"],
+    Geschichte: ["Nationalsozialismus", "Zweiter Weltkrieg", "Nachkriegszeit"],
+  },
+  12: {
+    Mathematik: ["Integralrechnung", "Vektorrechnung II", "Stochastik II"],
+    Deutsch: ["Drama-Analyse", "Sprachkritik", "Kommunikationstheorien"],
+    Englisch: ["Political Rhetoric", "Global Challenges", "Cultural Studies"],
+    Biologie: ["Genetik vertieft", "Neurobiologie", "Evolution vertieft"],
+    Physik: ["E-Lehre vertieft", "Magnetismus", "Quantenphysik – Grundlagen"],
+    Chemie: ["Aromaten", "Kinetik", "Thermodynamik"],
+    Geschichte: ["Kalter Krieg", "Deutsche Teilung", "Wiedervereinigung"],
+  },
+  13: {
+    Mathematik: ["Analysis III – Anwendungen", "Lineare Algebra Basics", "Statistische Tests"],
+    Deutsch: ["Vergleichende Analyse", "Sprachphilosophie", "Abiturvorbereitung"],
+    Englisch: ["Academic Writing", "Advanced Listening/Reading", "Abitur-Prep"],
+    Biologie: ["Populationsgenetik", "Immunbiologie", "Biotechnologie"],
+    Physik: ["Relativitätstheorie – Überblick", "Quanten I/II", "Atom-/Kernphysik"],
+    Chemie: ["Organik – Syntheseplanung", "Elektrochemie", "Komplexchemie"],
+    Geschichte: ["EU & Gegenwart", "Globalisierung", "Zeitgeschichte"],
+  },
+};
 
-function ladeFach(klasse, fach){
-  const key = `${klasse}-${fach}`;
-  if(!progressData[key]) progressData[key]=0;
-  const main = document.getElementById("main");
-  main.innerHTML = "";
-  const data = faecher[fach];
-  data.aufgaben.forEach((aufgabe,i)=>{
-    const card = document.createElement("div");
-    card.className="card";
-    if(i>progressData[key]) card.classList.add("locked");
-    card.innerHTML = `<h4>${data.titel} Level ${i+1}</h4><p>${aufgabe.text}</p><span class="level-badge">${i+1}</span>`;
-    if(!card.classList.contains("locked")){
-      if(aufgabe.typ=="gleichung") card.innerHTML+=`<input id="a" type="number" placeholder="a"><input id="b" type="number" placeholder="b"><input id="c" type="number" placeholder="c"><button onclick="loeseGleichung('${key}',${i})">Lösen</button>`;
-      if(aufgabe.typ=="ableitung") card.innerHTML+=`<input id="coeff" type="number" placeholder="a"><input id="exponent" type="number" placeholder="n"><button onclick="berechneAbleitung('${key}',${i})">Ableitung</button>`;
-      if(aufgabe.typ=="integral") card.innerHTML+=`<input id="coeffInt" type="number" placeholder="a"><input id="expInt" type="number" placeholder="n"><button onclick="berechneIntegral('${key}',${i})">Integral</button>`;
-      if(aufgabe.typ=="kraft") card.innerHTML+=`<input id="m" type="number" placeholder="Masse (kg)"><input id="a_phys" type="number" placeholder="Beschleunigung (m/s²)"><button onclick="berechneKraft('${key}',${i})">Berechnen</button>`;
-      if(aufgabe.typ=="reaktion") card.innerHTML+=`<input id="stoff1" type="text" placeholder="z.B. HCl"><input id="stoff2" type="text" placeholder="z.B. NaOH"><button onclick="chemReaktion('${key}',${i})">Reaktion simulieren</button>`;
-    }
-    main.appendChild(card);
-  });
-}
+// Simple question bank (demo) — per topic generate a couple of MC questions
+const QUESTION_BANK = {
+  "Lineare Funktionen": [
+    { q: "Steigung m bei f(x)=2x+3?", answers: ["2", "3", "-2", "0"], correct: 0, hint: "f(x)=mx+b" },
+    { q: "Nullstelle von f(x)=2x+4?", answers: ["x=2", "x=-2", "x=4", "x=-4"], correct: 1, hint: "Setze f(x)=0" },
+  ],
+  "DNA & Proteinsynthese": [
+    { q: "Basenpaarung in DNA?", answers: ["A-U, G-C", "A-T, G-C", "A-C, G-T", "A-G, C-T"], correct: 1, hint: "RNA ≠ DNA" },
+  ],
+};
 
-// Level abschließen
-function levelAbschliessen(key, level){
-  if(progressData[key]<=level){
-    progressData[key]=level+1;
-    ladeFach(key.split("-")[0], key.split("-")[1]);
-    alert("✅ Level abgeschlossen! Neues Level freigeschaltet.");
+// Mini AI — local heuristic without backend
+function aiRespond(prompt) {
+  if (!prompt) return "Wie kann ich dir helfen? Frage mich nach einem Thema oder lass dir ein Quiz generieren.";
+  const p = prompt.toLowerCase();
+  if (p.includes("plan") || p.includes("lernen")) {
+    return "Ich habe dir einen 7‑Tage Lernplan vorgeschlagen: 25‑30 Min pro Fach, Pomodoro (25/5), täglich 1 Mini‑Quiz. Starte mit deinen Schwachstellen und wiederhole am Ende kurz die Stärken.";
   }
+  if (p.includes("lineare")) return "Lineare Funktion: f(x)=mx+b. m=Steigung (Δy/Δx), b=y‑Achsenabschnitt. Übe: Steigung aus zwei Punkten berechnen und Nullstelle x0=-b/m.";
+  if (p.includes("dna") || p.includes("protein")) return "DNA → Transkription zu mRNA (im Zellkern), Translation an Ribosomen → Protein. A-T und G-C in DNA; in RNA A-U.";
+  if (p.includes("tip") || p.includes("hilfe") || p.includes("prüf")) return "Prüfungstipp: Übe aktiv (Retrieval Practice) statt nur zu lesen. Erkläre laut, löse alte Klausuren und tracke deine Fehler in einer Liste.";
+  return "Verstanden! Ich kann dir Themen erklären, Karten zum Spielen bauen oder ein Quiz starten. Nenne mir Klasse/Fach/Thema.";
 }
 
-// Mathe-Funktionen
-function loeseGleichung(key,level){const a=Number(document.getElementById("a").value),b=Number(document.getElementById("b").value),c=Number(document.getElementById("c").value);if(a===0){alert("a darf nicht 0 sein."); return;}alert(`Lösung: x=${(c-b)/a}`); levelAbschliessen(key,level);}
-function berechneAbleitung(key,level){const a=Number(document.getElementById("coeff").value),n=Number(document.getElementById("exponent").value);alert(`Ableitung: f'(x)=${a*n}x^${n-1}`); levelAbschliessen(key,level);}
-function berechneIntegral(key,level){const a=Number(document.getElementById("coeffInt").value),n=Number(document.getElementById("expInt").value);alert(`Integral: ∫f(x)dx=${a/(n+1)}x^${n+1}+C`); levelAbschliessen(key,level);}
-function berechneKraft(key,level){const m=Number(document.getElementById("m").value),a_phys=Number(document.getElementById("a_phys").value);alert(`F=${m*a_phys} N`); levelAbschliessen(key,level);}
-function chemReaktion(key,level){const s1=document.getElementById("stoff1").value,s2=document.getElementById("stoff2").value;if(!s1||!s2){alert("Bitte beide Stoffe eingeben.");return;}alert(`Simulation: ${s1}+${s2} → Produkt(e)`); levelAbschliessen(key,level);}
-</script>
-</body>
-</html>
+// ---------------------------- UI Primitives ----------------------------
+function NavItem({ icon: Icon, label, active, onClick }) {
+  return (
+    <button onClick={onClick} className={cx(
+      "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition",
+      active ? "bg-zinc-800/80 text-white shadow" : "hover:bg-zinc-800/50 text-zinc-300"
+    )}>
+      <Icon className="h-5 w-5" />
+      <span className="text-sm font-medium">{label}</span>
+      <ChevronRight className={cx("ml-auto h-4 w-4", active ? "opacity-100" : "opacity-0 group-hover:opacity-50")} />
+    </button>
+  );
+}
+
+function Card({ children, className }) {
+  return <div className={cx("rounded-2xl bg-zinc-900/80 border border-zinc-800 shadow-lg", className)}>{children}</div>;
+}
+function CardHeader({ title, icon: Icon, actions }) {
+  return (
+    <div className="flex items-center gap-3 p-5 border-b border-zinc-800">
+      {Icon && <Icon className="h-5 w-5 text-zinc-300" />}
+      <h3 className="text-lg font-semibold">{title}</h3>
+      <div className="ml-auto flex items-center gap-2">{actions}</div>
+    </div>
+  );
+}
+function CardBody({ children, className }) {
+  return <div className={cx("p-5", className)}>{children}</div>;
+}
+
+function Pill({ children, className }) {
+  return <span className={cx("inline-flex items-center rounded-full border border-zinc-700 px-3 py-1 text-xs text-zinc-300", className)}>{children}</span>;
+}
+
+// ---------------------------- Pages ----------------------------
+
+function Dashboard({ progress, onGoLearn }) {
+  const totalTopics = Object.values(CURRICULUM).flatMap((g) => Object.values(g).flat()).length;
+  const done = Object.values(progress).filter(Boolean).length;
+  const pct = Math.round((done / Math.max(1, totalTopics)) * 100);
+
+  return (
+    <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+      <Card className="xl:col-span-2">
+        <CardHeader title="Übersicht & Fortschritt" icon={LayoutGrid} actions={<Pill>{pct}% gesamt</Pill>} />
+        <CardBody>
+          <div className="h-3 w-full rounded-full bg-zinc-800 overflow-hidden">
+            <div className="h-full bg-gradient-to-r from-indigo-500 via-blue-500 to-emerald-400" style={{ width: `${pct}%` }} />
+          </div>
+          <div className="mt-3 text-sm text-zinc-400">{done} von {totalTopics} Themen abgeschlossen</div>
+          <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-3">
+            {[10,11,12,13].map((k) => (
+              <div key={k} className="rounded-xl bg-zinc-950/60 border border-zinc-800 p-4">
+                <div className="text-xs text-zinc-400">Klasse</div>
+                <div className="text-xl font-semibold">{k}</div>
+                <button onClick={() => onGoLearn(k)} className="mt-3 text-xs inline-flex items-center gap-1 px-3 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700">Themen ansehen <ChevronRight className="h-3 w-3"/></button>
+              </div>
+            ))}
+          </div>
+        </CardBody>
+      </Card>
+
+      <Card>
+        <CardHeader title="Schnellstart" icon={Rocket} />
+        <CardBody className="space-y-3">
+          <QuickAction label="Lernen starten" icon={BookOpenText} hint="Wähle Klasse/Fach/Thema" onClick={() => onGoLearn(11)} />
+          <QuickAction label="Spielmodus: Karteikarten" icon={Gamepad2} hint="Spiele, um zu erinnern" onClick={() => window.scrollTo({top:9999,behavior:"smooth"})} />
+          <QuickAction label="KI um Hilfe bitten" icon={Brain} hint="Erklärt & erzeugt Aufgaben" onClick={() => document.getElementById("ai-panel")?.scrollIntoView({behavior:"smooth"})} />
+        </CardBody>
+      </Card>
+
+      <Card className="xl:col-span-3">
+        <CardHeader title="Empfohlen heute" icon={Lightbulb} />
+        <CardBody>
+          <Recommendations />
+        </CardBody>
+      </Card>
+    </div>
+  );
+}
+
+function QuickAction({ label, hint, onClick, icon: Icon }){
+  return (
+    <button onClick={onClick} className="w-full flex items-center gap-3 rounded-xl border border-zinc-800 bg-zinc-900/70 px-4 py-3 text-left hover:bg-zinc-800">
+      <Icon className="h-5 w-5 text-zinc-300"/>
+      <div className="leading-tight">
+        <div className="text-sm font-medium">{label}</div>
+        <div className="text-xs text-zinc-400">{hint}</div>
+      </div>
+      <ChevronRight className="ml-auto h-4 w-4 text-zinc-400"/>
+    </button>
+  );
+}
+
+function Recommendations(){
+  const picks = useMemo(() => [
+    { grade:11, subject:"Mathematik", topic:"Analysis I (Ableitung)" },
+    { grade:12, subject:"Physik", topic:"Quantenphysik – Grundlagen" },
+    { grade:10, subject:"Biologie", topic:"Genetik Basics" },
+  ], []);
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {picks.map((p, i) => (
+        <div key={i} className="rounded-2xl border border-zinc-800 bg-gradient-to-br from-zinc-900 to-zinc-950 p-4">
+          <div className="text-xs text-zinc-400">Empfohlen • Klasse {p.grade}</div>
+          <div className="mt-1 text-sm text-zinc-300">{p.subject}</div>
+          <div className="text-lg font-semibold">{p.topic}</div>
+          <div className="mt-3 flex gap-2">
+            <Pill><Clock3 className="h-3 w-3 mr-1"/> 20–25 Min</Pill>
+            <Pill><Layers className="h-3 w-3 mr-1"/> Grundlagen</Pill>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function LearnPage({ grade, setGrade, subject, setSubject, progress, setProgress }){
+  const subjects = useMemo(() => Object.keys(CURRICULUM[grade] || {}), [grade]);
+  const topics = useMemo(() => (CURRICULUM[grade]?.[subject] ?? []), [grade, subject]);
+
+  useEffect(() => { if (!subjects.includes(subject)) setSubject(subjects[0]); }, [subjects.join(",")]);
+
+  function toggleDone(topic){
+    const key = `${grade}|${subject}|${topic}`;
+    const newProg = { ...progress, [key]: !progress[key] };
+    setProgress(newProg);
+    save("progress", newProg);
+  }
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader title="Lernen" icon={BookOpenText} actions={<Pill>Klasse {grade}</Pill>} />
+        <CardBody>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <Selector label="Klasse" value={grade} onChange={setGrade} options={[10,11,12,13]} />
+            <Selector label="Fach" value={subject} onChange={setSubject} options={subjects} />
+            <div className="col-span-1 flex items-end"><SearchInput /></div>
+          </div>
+        </CardBody>
+      </Card>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+        {topics.map((t) => {
+          const key = `${grade}|${subject}|${t}`;
+          const done = !!progress[key];
+          return (
+            <Card key={t}>
+              <CardHeader title={t} icon={GraduationCap} actions={<Pill>{done ? "Abgeschlossen" : "Offen"}</Pill>} />
+              <CardBody>
+                <p className="text-sm text-zinc-300">Kurzbeschreibung, Lernziele und Beispielaufgaben. Starte mit dem Mini‑Quiz oder markiere als erledigt.</p>
+                <div className="mt-4 flex gap-2">
+                  <button onClick={() => alert("Lesson Starter – hier würdest du Inhalte anzeigen.")} className="px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-sm">Start Lektion</button>
+                  <button onClick={() => startQuiz(t)} className="px-3 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-sm">Mini‑Quiz</button>
+                  <button onClick={() => toggleDone(t)} className={cx("px-3 py-2 rounded-lg text-sm", done ? "bg-emerald-600 hover:bg-emerald-500" : "bg-zinc-800 hover:bg-zinc-700")}>{done ? "Erledigt" : "Als erledigt"}</button>
+                </div>
+              </CardBody>
+            </Card>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function Selector({ label, value, onChange, options }){
+  return (
+    <label className="block">
+      <div className="text-xs text-zinc-400 mb-1">{label}</div>
+      <select value={value} onChange={(e)=>onChange(isNaN(+e.target.value)? e.target.value: +e.target.value)} className="w-full rounded-xl bg-zinc-900 border border-zinc-700 px-3 py-2 text-sm">
+        {options.map((o) => <option key={o} value={o}>{o}</option>)}
+      </select>
+    </label>
+  );
+}
+
+function SearchInput(){
+  return (
+    <div className="w-full relative">
+      <Search className="absolute left-3 top-2.5 h-4 w-4 text-zinc-500"/>
+      <input placeholder="Thema suchen…" className="w-full rounded-xl bg-zinc-900 border border-zinc-700 pl-9 pr-3 py-2 text-sm placeholder-zinc-500"/>
+    </div>
+  );
+}
+
+function startQuiz(topic){
+  const bank = QUESTION_BANK[topic];
+  if (!bank) { alert("Für dieses Thema gibt es noch kein Demo‑Quiz. (Einfach im Code erweitern!)"); return; }
+  window.dispatchEvent(new CustomEvent("open-quiz", { detail: { topic } }));
+}
+
+function QuizPage(){
+  const [state, setState] = useState({ topic: null, idx: 0, sel: null, score: 0, finished: false });
+  useEffect(() => {
+    const h = (e) => {
+      setState({ topic: e.detail.topic, idx: 0, sel: null, score: 0, finished: false });
+      document.getElementById("quiz-panel")?.scrollIntoView({behavior:"smooth"});
+    };
+    window.addEventListener("open-quiz", h);
+    return () => window.removeEventListener("open-quiz", h);
+  }, []);
+
+  const bank = state.topic ? QUESTION_BANK[state.topic] : null;
+  const current = bank ? bank[state.idx] : null;
+
+  function choose(a){ setState(s => ({...s, sel:a})); }
+  function next(){
+    setState((s)=>{
+      const correct = bank[s.idx].correct === s.sel;
+      const score = s.score + (correct ? 1 : 0);
+      const nextIdx = s.idx + 1;
+      if (nextIdx >= bank.length) return { ...s, score, finished: true };
+      return { ...s, score, idx: nextIdx, sel: null };
+    });
+  }
+
+  return (
+    <div id="quiz-panel" className="space-y-6">
+      <Card>
+        <CardHeader title="Quiz" icon={Sparkles} actions={state.topic && <Pill>Thema: {state.topic}</Pill>} />
+        <CardBody>
+          {!bank && <div className="text-zinc-400 text-sm">Wähle in "Lernen" ein Thema und klicke auf <em>Mini‑Quiz</em>.</div>}
+          {bank && !state.finished && current && (
+            <div className="space-y-5">
+              <div className="text-sm text-zinc-300">Frage {state.idx+1} / {bank.length}</div>
+              <div className="text-lg font-semibold">{current.q}</div>
+              <div className="grid grid-cols-1 gap-3">
+                {current.answers.map((a,i)=>{
+                  const selected = state.sel === i;
+                  return (
+                    <button key={i} onClick={()=>choose(i)} className={cx("text-left px-4 py-3 rounded-xl border", selected ? "border-indigo-500 bg-indigo-500/10" : "border-zinc-800 bg-zinc-900 hover:bg-zinc-800")}>{a}</button>
+                  );
+                })}
+              </div>
+              {state.sel == null ? (
+                <div className="text-xs text-zinc-400">Tipp: {current.hint}</div>
+              ) : (
+                <button onClick={next} className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-sm">Weiter</button>
+              )}
+            </div>
+          )}
+          {bank && state.finished && (
+            <div className="text-center space-y-3">
+              <Trophy className="h-10 w-10 mx-auto text-amber-400"/>
+              <div className="text-xl font-semibold">Ergebnis: {state.score} / {bank.length}</div>
+              <div className="text-sm text-zinc-400">Mach weiter so! Wiederhole in 24–48h (Spacing‑Effekt).</div>
+            </div>
+          )}
+        </CardBody>
+      </Card>
+    </div>
+  );
+}
+
+function GamePage(){
+  // Simple flashcards from the curriculum
+  const cards = useMemo(()=>[
+    { front: "f(x)=mx+b — m?", back: "Steigung (Δy/Δx)", topic:"Mathe" },
+    { front: "Basenpaarung DNA", back: "A‑T, G‑C", topic:"Bio" },
+    { front: "Ohmsches Gesetz", back: "U=R·I", topic:"Physik" },
+  ], []);
+  const [i, setI] = useState(0);
+  const [flip, setFlip] = useState(false);
+  function next(){ setFlip(false); setI((i+1)%cards.length); }
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader title="Spielmodus – Karteikarten" icon={Gamepad2} />
+        <CardBody>
+          <div className="flex flex-col items-center gap-4">
+            <div className={cx("relative w-full max-w-xl h-56 cursor-pointer select-none rounded-2xl border border-zinc-800 bg-gradient-to-br from-zinc-900 to-zinc-950 p-6 flex items-center justify-center text-center text-lg font-semibold transition-transform", flip ? "rotate-y-180" : "")} onClick={()=>setFlip(!flip)} style={{transformStyle:"preserve-3d"}}>
+              <div className="absolute inset-0 flex items-center justify-center" style={{backfaceVisibility:"hidden"}}>{cards[i].front}</div>
+              <div className="absolute inset-0 flex items-center justify-center rotate-y-180" style={{backfaceVisibility:"hidden"}}>{cards[i].back}</div>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={()=>setFlip(true)} className="px-4 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-sm">Aufdecken</button>
+              <button onClick={next} className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-sm">Nächste Karte</button>
+            </div>
+          </div>
+        </CardBody>
+      </Card>
+    </div>
+  );
+}
+
+function AIAssistant(){
+  const [input, setInput] = useState("");
+  const [msgs, setMsgs] = useState(load("ai_msgs", [
+    { role:"assistant", text:"Hi! Ich bin deine KI. Frag mich alles zu Klasse 10–13 oder sag: \"Mach mir einen Lernplan\"." }
+  ]));
+  useEffect(()=>save("ai_msgs", msgs), [msgs]);
+
+  function send(){
+    if (!input.trim()) return;
+    const user = { role: "user", text: input.trim() };
+    const reply = { role: "assistant", text: aiRespond(input.trim()) };
+    setMsgs((m)=>[...m, user, reply]);
+    setInput("");
+    setTimeout(()=>document.getElementById("ai-panel")?.scrollIntoView({behavior:"smooth", block:"end"}), 50);
+  }
+
+  return (
+    <div id="ai-panel" className="space-y-6">
+      <Card>
+        <CardHeader title="KI‑Assistent" icon={Brain} />
+        <CardBody>
+          <div className="h-72 overflow-y-auto space-y-3 pr-1">
+            {msgs.map((m,idx)=>(
+              <div key={idx} className={cx("max-w-[85%] rounded-2xl px-4 py-3", m.role==="assistant"?"bg-zinc-800/80 text-zinc-100":"bg-indigo-600/90 ml-auto text-white")}>
+                {m.text}
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 flex gap-2">
+            <input value={input} onChange={(e)=>setInput(e.target.value)} onKeyDown={(e)=>e.key==='Enter'&&send()} placeholder="Frag mich nach Themen, Erklärungen, Lernplan…" className="flex-1 rounded-xl bg-zinc-900 border border-zinc-700 px-3 py-2 text-sm"/>
+            <button onClick={send} className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-sm">Senden</button>
+          </div>
+          <div className="mt-2 text-[11px] text-zinc-500">Demo‑KI (on‑device). Für echte Chat‑KI kannst du hier später eine API anbinden.</div>
+        </CardBody>
+      </Card>
+    </div>
+  );
+}
+
+// ---------------------------- Shell ----------------------------
+const PAGES = [
+  { key: "dashboard", label: "Dashboard", icon: LayoutGrid },
+  { key: "learn", label: "Lernen", icon: BookOpenText },
+  { key: "game", label: "Spiele", icon: Gamepad2 },
+  { key: "quiz", label: "Quiz", icon: Sparkles },
+  { key: "ai", label: "KI‑Hilfe", icon: Brain },
+];
+
+export default function App(){
+  const [route, setRoute] = useState("dashboard");
+  const [grade, setGrade] = useState(11);
+  const [subject, setSubject] = useState("Mathematik");
+  const [progress, setProgress] = useState(load("progress", {}));
+
+  useEffect(()=>save("progress", progress), [progress]);
+
+  return (
+    <div className="min-h-screen bg-zinc-950 text-zinc-100">
+      {/* Topbar */}
+      <header className="sticky top-0 z-20 backdrop-blur supports-[backdrop-filter]:bg-zinc-950/70 bg-zinc-950/90 border-b border-zinc-900">
+        <div className="mx-auto max-w-7xl px-4 py-3 flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <div className="h-8 w-8 grid place-items-center rounded-xl bg-gradient-to-tr from-indigo-600 to-emerald-500"><Sparkles className="h-4 w-4"/></div>
+            <div className="font-semibold">DarkLearn</div>
+            <Pill className="ml-2">Klasse 10–13</Pill>
+          </div>
+          <div className="ml-auto hidden md:flex items-center gap-2">
+            <input placeholder="Suche…" className="w-72 rounded-xl bg-zinc-900 border border-zinc-800 px-3 py-2 text-sm"/>
+            <button className="rounded-xl bg-zinc-900 border border-zinc-800 px-3 py-2 text-sm">Anmelden</button>
+          </div>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-7xl px-4 py-6 grid grid-cols-1 lg:grid-cols-[260px,1fr] gap-6">
+        {/* Sidebar */}
+        <aside className="lg:sticky lg:top-16 h-max">
+          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-2">
+            {PAGES.map(p => (
+              <NavItem key={p.key} icon={p.icon} label={p.label} active={route===p.key} onClick={()=>setRoute(p.key)} />
+            ))}
+          </div>
+          <div className="mt-3 text-[11px] text-zinc-500 px-1">Dark‑Theme • Mehrseitig • Spiel/Quiz • KI‑Hilfe</div>
+        </aside>
+
+        {/* Page Content */}
+        <section className="space-y-6">
+          {route === "dashboard" && <Dashboard progress={progress} onGoLearn={(g)=>{ setRoute("learn"); setGrade(g); }}/>} 
+          {route === "learn" && <LearnPage grade={grade} setGrade={setGrade} subject={subject} setSubject={setSubject} progress={progress} setProgress={setProgress} />} 
+          {route === "game" && <GamePage />} 
+          {route === "quiz" && <QuizPage />} 
+          {route === "ai" && <AIAssistant />} 
+        </section>
+      </main>
+
+      <footer className="border-t border-zinc-900/80">
+        <div className="mx-auto max-w-7xl px-4 py-6 text-xs text-zinc-500 flex flex-wrap gap-3 items-center">
+          <span>© {new Date().getFullYear()} DarkLearn</span>
+          <span>•</span>
+          <span>Gemacht für 11.–13. Klasse (inkl. Klasse 10 Inhalte)</span>
+          <span className="ml-auto">Built with React & Tailwind</span>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+// Tailwind utility: 3D flip classes
+// (Works without extra CSS frameworks)
+const style = document.createElement('style');
+style.textContent = `
+  .rotate-y-180 { transform: rotateY(180deg); }
+`;
+document.head.appendChild(style);
