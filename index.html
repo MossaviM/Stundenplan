@@ -3,233 +3,134 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Oberstufe Profi-Lernassistent (11.-13. Klasse)</title>
+<title>Oberstufe Lernspiel</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 <style>
-body {font-family:'Inter',sans-serif;margin:0;padding:0;background:linear-gradient(135deg,#fdfbfb 0%,#ebedee 100%);color:#333;}
-header{background-color:#4a90e2;color:white;text-align:center;padding:2rem 1rem;font-size:1.8rem;font-weight:600;}
-main{max-width:1200px;margin:2rem auto;padding:2rem;background:white;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,0.1);}
-h2,h3{text-align:center;margin-bottom:1rem;}
-.input-container{display:flex;justify-content:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:2rem;}
-select,input{padding:0.75rem;font-size:1rem;border-radius:12px;border:1px solid #ccc;}
-input{flex:1 1 50%;}
-button{padding:0.75rem 1rem;font-size:1rem;background-color:#4a90e2;color:white;border:none;border-radius:12px;cursor:pointer;transition:0.3s;}
-button:hover{background-color:#357ab8;}
-#antwort{padding:1.5rem;background:#f1f6fb;border-radius:12px;min-height:200px;font-size:1.1rem;line-height:1.5;margin-bottom:2rem;white-space:pre-wrap;}
-.quiz-container{margin-top:2rem;padding:1rem;background:#eef5fc;border-radius:12px;}
-.quiz-question{margin-bottom:1rem;font-weight:600;}
-.quiz-options button{display:block;width:100%;text-align:left;margin:0.3rem 0;}
-.visual-container{text-align:center;margin-top:2rem;}
-canvas{max-width:100%;border:1px solid #ccc;border-radius:12px;}
-.progress-bar{width:100%;background:#eee;border-radius:12px;overflow:hidden;margin:1rem 0;}
-.progress{width:0%;height:20px;background-color:#4a90e2;transition:0.5s;text-align:center;color:white;font-weight:600;}
-.accordion{background:#4a90e2;color:white;cursor:pointer;padding:1rem;width:100%;border:none;text-align:left;outline:none;font-size:1.1rem;margin-top:1rem;border-radius:8px;}
-.active,.accordion:hover{background:#357ab8;}
-.panel{padding:0 1rem;display:none;background-color:#f1f6fb;overflow:hidden;border-radius:8px;margin-bottom:1rem;}
-.calc-container{margin-top:2rem;padding:1rem;background:#f9f9f9;border-radius:12px;}
-.calc-container input{margin:0.3rem 0;width:90%;}
+body, html {margin:0; padding:0; font-family:'Inter',sans-serif; background:#f5f6fa; color:#333;}
+* {box-sizing:border-box;}
+header {background:#4a90e2; color:white; padding:1rem 2rem; font-size:1.5rem; font-weight:600; text-align:center; box-shadow:0 2px 10px rgba(0,0,0,0.1);}
+.container {display:flex; min-height:calc(100vh - 64px);}
+.sidebar {width:240px; background:#fff; border-right:1px solid #ddd; padding:1rem 0; display:flex; flex-direction:column; box-shadow:2px 0 10px rgba(0,0,0,0.05);}
+.sidebar h3 {margin:1rem; font-size:1rem; color:#666; text-transform:uppercase; letter-spacing:0.5px;}
+.sidebar button {background:none; border:none; padding:0.75rem 1.5rem; text-align:left; cursor:pointer; font-size:1rem; color:#333; width:100%; transition:0.3s; border-left:3px solid transparent;}
+.sidebar button:hover, .sidebar button.active {background:#f0f4ff; border-left:3px solid #4a90e2;}
+.main {flex:1; padding:2rem; overflow-y:auto;}
+.card {background:#fff; border-radius:12px; padding:1.5rem; margin-bottom:1.5rem; box-shadow:0 5px 15px rgba(0,0,0,0.05); transition:0.3s; position:relative;}
+.card.locked {opacity:0.5;}
+.card h4 {margin-top:0; margin-bottom:0.5rem; font-size:1.2rem; color:#4a90e2;}
+.card p {margin:0.5rem 0; line-height:1.5;}
+.card input, .card select {width:100%; padding:0.5rem; margin:0.5rem 0; border:1px solid #ccc; border-radius:8px; font-size:1rem;}
+.card button {background:#4a90e2; color:white; border:none; border-radius:8px; padding:0.5rem 1rem; cursor:pointer; transition:0.3s; margin-top:0.5rem;}
+.card button:hover {background:#357ab8;}
+.progress-bar {width:100%; background:#eee; border-radius:12px; overflow:hidden; margin-top:1rem;}
+.progress {width:0%; height:20px; background:#4a90e2; text-align:center; color:white; font-weight:600; transition:0.5s;}
+.level-badge {position:absolute; top:15px; right:15px; background:#ffcc00; color:#333; padding:0.3rem 0.6rem; border-radius:50%; font-weight:600;}
+canvas {width:100%; height:300px; border-radius:12px; margin-top:1rem; background:#f9f9f9;}
+@media(max-width:900px){.container{flex-direction:column;}.sidebar{width:100%; display:flex; flex-direction:row; overflow-x:auto;} .sidebar button{flex:1 0 auto; text-align:center; border-left:none; border-bottom:3px solid transparent;} .sidebar button:hover{border-bottom:3px solid #4a90e2;}}
 </style>
 </head>
 <body>
+<header>🎓 Oberstufe Lernspiel</header>
+<div class="container">
+  <div class="sidebar" id="sidebar">
+    <h3>11. Klasse</h3>
+    <button onclick="ladeFach('11','mathe')">Mathematik</button>
+    <button onclick="ladeFach('11','physik')">Physik</button>
+    <button onclick="ladeFach('11','biologie')">Biologie</button>
+    <button onclick="ladeFach('11','chemie')">Chemie</button>
+    <button onclick="ladeFach('11','geschichte')">Geschichte</button>
+    <button onclick="ladeFach('11','englisch')">Englisch</button>
 
-<header>🎓 Oberstufe Profi-Lernassistent (11.–13. Klasse)</header>
+    <h3>12. Klasse</h3>
+    <button onclick="ladeFach('12','mathe')">Mathematik</button>
+    <button onclick="ladeFach('12','physik')">Physik</button>
+    <button onclick="ladeFach('12','biologie')">Biologie</button>
+    <button onclick="ladeFach('12','chemie')">Chemie</button>
+    <button onclick="ladeFach('12','geschichte')">Geschichte</button>
+    <button onclick="ladeFach('12','englisch')">Englisch</button>
 
-<main>
-<h2>Fach & Klasse auswählen oder Frage stellen</h2>
-
-<div class="input-container">
-  <select id="klasse">
-    <option value="11">11. Klasse</option>
-    <option value="12">12. Klasse</option>
-    <option value="13">13. Klasse</option>
-  </select>
-  <select id="fach">
-    <option value="">-- Fach auswählen --</option>
-    <option value="mathe">Mathematik</option>
-    <option value="physik">Physik</option>
-    <option value="biologie">Biologie</option>
-    <option value="chemie">Chemie</option>
-    <option value="geschichte">Geschichte</option>
-    <option value="englisch">Englisch</option>
-  </select>
-  <input type="text" id="frage" placeholder="Oder schreibe eine Frage...">
-  <button onclick="beantworteFrage()">Los</button>
-</div>
-
-<div id="antwort">Hier erscheint deine Antwort...</div>
-
-<h3>Mini-Quiz: Teste dein Wissen</h3>
-<div class="quiz-container" id="quiz">
-  <div class="quiz-question" id="quiz-frage">Was ist 7 + 5?</div>
-  <div class="quiz-options">
-    <button onclick="checkAntwort(this)">10</button>
-    <button onclick="checkAntwort(this)">12</button>
-    <button onclick="checkAntwort(this)">14</button>
-    <button onclick="checkAntwort(this)">15</button>
+    <h3>13. Klasse</h3>
+    <button onclick="ladeFach('13','mathe')">Mathematik</button>
+    <button onclick="ladeFach('13','physik')">Physik</button>
+    <button onclick="ladeFach('13','biologie')">Biologie</button>
+    <button onclick="ladeFach('13','chemie')">Chemie</button>
+    <button onclick="ladeFach('13','geschichte')">Geschichte</button>
+    <button onclick="ladeFach('13','englisch')">Englisch</button>
   </div>
-  <div id="quiz-feedback" style="margin-top:1rem;font-weight:600;"></div>
-  <div class="progress-bar"><div class="progress" id="progress">0%</div></div>
+
+  <div class="main" id="main">
+    <div class="card">
+      <h4>Willkommen!</h4>
+      <p>Wähle links deine Klasse und dein Fach aus, um Level freizuschalten und interaktiv zu lernen. Jede Aufgabe ist ein Level und schaltet neue frei!</p>
+    </div>
+  </div>
 </div>
-
-<h3>Interaktive Berechnungen</h3>
-<div class="calc-container">
-  <h4>Mathematik: Gleichung lösen (ax + b = c)</h4>
-  <input type="number" id="a" placeholder="a">
-  <input type="number" id="b" placeholder="b">
-  <input type="number" id="c" placeholder="c">
-  <button onclick="loeseGleichung()">Lösen</button>
-
-  <h4>Mathematik: Ableitung einer Funktion f(x)=ax^n</h4>
-  <input type="number" id="coeff" placeholder="a">
-  <input type="number" id="exponent" placeholder="n">
-  <button onclick="berechneAbleitung()">Ableitung</button>
-
-  <h4>Mathematik: Integral einer Funktion f(x)=ax^n</h4>
-  <input type="number" id="coeffInt" placeholder="a">
-  <input type="number" id="expInt" placeholder="n">
-  <button onclick="berechneIntegral()">Integral</button>
-
-  <h4>Physik: Kraft berechnen (F = m * a)</h4>
-  <input type="number" id="m" placeholder="Masse (kg)">
-  <input type="number" id="a_phys" placeholder="Beschleunigung (m/s²)">
-  <button onclick="berechneKraft()">Berechnen</button>
-
-  <h4>Chemie: Reaktionsauswertung</h4>
-  <input type="text" id="stoff1" placeholder="z.B. HCl">
-  <input type="text" id="stoff2" placeholder="z.B. NaOH">
-  <button onclick="chemReaktion()">Reaktion simulieren</button>
-</div>
-
-<h3>Visualisierung: Funktionsgraph</h3>
-<div class="visual-container">
-  <input type="text" id="funktionsEingabe" placeholder="z.B. 2*x+3" style="width:80%; margin-bottom:10px;">
-  <button onclick="zeichneFunktion()">Graph zeichnen</button>
-  <canvas id="graphCanvas" width="800" height="300"></canvas>
-</div>
-
-<h3>Lernpfade: Schritt-für-Schritt</h3>
-<button class="accordion">Mathematik: Analysis</button>
-<div class="panel"><p>Schritt 1: Funktion verstehen</p><p>Schritt 2: Ableitung berechnen</p><p>Schritt 3: Beispielaufgabe lösen</p></div>
-<button class="accordion">Physik: Mechanik</button>
-<div class="panel"><p>Schritt 1: Kräfte erkennen</p><p>Schritt 2: Formeln anwenden</p><p>Schritt 3: Aufgabe berechnen</p></div>
-<button class="accordion">Biologie: Genetik</button>
-<div class="panel"><p>Schritt 1: DNA Aufbau lernen</p><p>Schritt 2: Vererbungsmuster verstehen</p><p>Schritt 3: Punnett-Quadrat Beispiel</p></div>
-<button class="accordion">Chemie: Reaktionen</button>
-<div class="panel"><p>Schritt 1: Atome & Moleküle verstehen</p><p>Schritt 2: Reaktionsgleichungen aufstellen</p><p>Schritt 3: Beispielaufgabe lösen</p></div>
-<button class="accordion">Geschichte: Epochen</button>
-<div class="panel"><p>Schritt 1: Zeitraum & Ereignisse lernen</p><p>Schritt 2: Ursachen & Folgen verstehen</p><p>Schritt 3: Beispielaufgabe analysieren</p></div>
-<button class="accordion">Englisch: Grammatik</button>
-<div class="panel"><p>Schritt 1: Grammatikregeln wiederholen</p><p>Schritt 2: Vokabeln lernen</p><p>Schritt 3: Übungssätze schreiben</p></div>
-
-</main>
 
 <script>
-// Antworten dynamisch
-function beantworteFrage(){
-  const klasse=document.getElementById("klasse").value;
-  const fach=document.getElementById("fach").value;
-  const frage=document.getElementById("frage").value.toLowerCase();
-  const antwort=document.getElementById("antwort");
-  const fakten={
-    mathe:{"11":"Mathe 11: Gleichungen, Funktionen","12":"Mathe 12: Ableitungen, Integrale","13":"Mathe 13: Stochastik & Analysis Vertiefung"},
-    physik:{"11":"Physik 11: Mechanik, Energie","12":"Physik 12: Optik, Magnetismus","13":"Physik 13: Quanten, Relativität"},
-    biologie:{"11":"Biologie 11: Zellbiologie, Genetik","12":"Biologie 12: Evolution & Ökosysteme","13":"Biologie 13: Molekularbiologie & Genetik Vertiefung"},
-    chemie:{"11":"Chemie 11: Atome, Reaktionen","12":"Chemie 12: Organische Chemie","13":"Chemie 13: Reaktionsmechanismen & Analytische Chemie"},
-    geschichte:{"11":"Geschichte 11: Epochen & Revolutionen","12":"Geschichte 12: Weltkriege & Kalter Krieg","13":"Geschichte 13: Moderne Geschichte & Globalisierung"},
-    englisch:{"11":"Englisch 11: Grammatik & Vokabeln","12":"Englisch 12: Essay & Advanced Grammar","13":"Englisch 13: Literatur & Rhetorik"}
-  };
-  if(fach&&klasse){ antwort.innerHTML=fakten[fach][klasse]; return; }
-  antwort.innerHTML="Bitte Fach und Klasse wählen oder präzise Frage eingeben.";
-}
+// Daten mit Level-Struktur
+const faecher = {
+  mathe: {titel:"Mathematik", aufgaben:[
+    {text:"Löse die Gleichung ax+b=c", typ:"gleichung"},
+    {text:"Berechne die Ableitung von f(x)=ax^n", typ:"ableitung"},
+    {text:"Berechne das Integral von f(x)=ax^n", typ:"integral"}
+  ]},
+  physik: {titel:"Physik", aufgaben:[
+    {text:"Berechne die Kraft F=m*a", typ:"kraft"},
+    {text:"Geschwindigkeit v=s/t", typ:"geschwindigkeit"},
+    {text:"Energie E=m*c^2", typ:"energie"}
+  ]},
+  biologie: {titel:"Biologie", aufgaben:[
+    {text:"Erkläre die Zellteilung", typ:"text"},
+    {text:"Nenne die DNA-Basen", typ:"text"},
+    {text:"Genetische Vererbung", typ:"text"}
+  ]},
+  chemie: {titel:"Chemie", aufgaben:[
+    {text:"Reaktionsgleichung: HCl + NaOH", typ:"reaktion"},
+    {text:"Stöchiometrische Berechnung", typ:"text"},
+    {text:"Säuren und Basen", typ:"text"}
+  ]}
+};
 
-// Quiz
-let quizPunkte=0;
-function checkAntwort(button){
-  const feedback=document.getElementById("quiz-feedback");
-  const progress=document.getElementById("progress");
-  if(button.innerText==="12"){ feedback.innerText="✅ Richtig!"; feedback.style.color="green"; quizPunkte+=20;}
-  else{ feedback.innerText="❌ Falsch, versuche es nochmal."; feedback.style.color="red";}
-  progress.style.width=quizPunkte+"%"; progress.innerText=quizPunkte+"%";
-}
+// Fortschritt speichern
+let progressData = {}; // z.B. progressData["11-mathe"] = 0;
 
-// Accordion
-const acc=document.getElementsByClassName("accordion");
-for(let i=0;i<acc.length;i++){
-  acc[i].addEventListener("click",function(){
-    this.classList.toggle("active");
-    const panel=this.nextElementSibling;
-    panel.style.display=(panel.style.display==="block")?"none":"block";
+function ladeFach(klasse, fach){
+  const key = `${klasse}-${fach}`;
+  if(!progressData[key]) progressData[key]=0;
+  const main = document.getElementById("main");
+  main.innerHTML = "";
+  const data = faecher[fach];
+  data.aufgaben.forEach((aufgabe,i)=>{
+    const card = document.createElement("div");
+    card.className="card";
+    if(i>progressData[key]) card.classList.add("locked");
+    card.innerHTML = `<h4>${data.titel} Level ${i+1}</h4><p>${aufgabe.text}</p><span class="level-badge">${i+1}</span>`;
+    if(!card.classList.contains("locked")){
+      if(aufgabe.typ=="gleichung") card.innerHTML+=`<input id="a" type="number" placeholder="a"><input id="b" type="number" placeholder="b"><input id="c" type="number" placeholder="c"><button onclick="loeseGleichung('${key}',${i})">Lösen</button>`;
+      if(aufgabe.typ=="ableitung") card.innerHTML+=`<input id="coeff" type="number" placeholder="a"><input id="exponent" type="number" placeholder="n"><button onclick="berechneAbleitung('${key}',${i})">Ableitung</button>`;
+      if(aufgabe.typ=="integral") card.innerHTML+=`<input id="coeffInt" type="number" placeholder="a"><input id="expInt" type="number" placeholder="n"><button onclick="berechneIntegral('${key}',${i})">Integral</button>`;
+      if(aufgabe.typ=="kraft") card.innerHTML+=`<input id="m" type="number" placeholder="Masse (kg)"><input id="a_phys" type="number" placeholder="Beschleunigung (m/s²)"><button onclick="berechneKraft('${key}',${i})">Berechnen</button>`;
+      if(aufgabe.typ=="reaktion") card.innerHTML+=`<input id="stoff1" type="text" placeholder="z.B. HCl"><input id="stoff2" type="text" placeholder="z.B. NaOH"><button onclick="chemReaktion('${key}',${i})">Reaktion simulieren</button>`;
+    }
+    main.appendChild(card);
   });
 }
 
-// Graph zeichnen
-const canvas=document.getElementById("graphCanvas");
-const ctx=canvas.getContext("2d");
-function zeichneGraph(){ ctx.clearRect(0,0,canvas.width,canvas.height); ctx.beginPath(); ctx.moveTo(0,canvas.height/2); for(let x=0;x<canvas.width;x++){ let y=canvas.height/2-50*Math.sin((x/800)*4*Math.PI); ctx.lineTo(x,y);} ctx.strokeStyle="#4a90e2"; ctx.lineWidth=3; ctx.stroke(); }
-
-// Dynamische Funktion zeichnen
-function zeichneFunktion(){
-  const f=document.getElementById("funktionsEingabe").value;
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  ctx.beginPath(); ctx.moveTo(0,canvas.height/2);
-  for(let x=0;x<canvas.width;x++){
-    let X=(x-400)/40;
-    let yval=0;
-    try{ yval=eval(f.replace(/x/g,X)); }catch(e){yval=0;}
-    let y=canvas.height/2-yval*20;
-    ctx.lineTo(x,y);
+// Level abschließen
+function levelAbschliessen(key, level){
+  if(progressData[key]<=level){
+    progressData[key]=level+1;
+    ladeFach(key.split("-")[0], key.split("-")[1]);
+    alert("✅ Level abgeschlossen! Neues Level freigeschaltet.");
   }
-  ctx.strokeStyle="#4a90e2"; ctx.lineWidth=3; ctx.stroke();
 }
 
-// Mathematik: Gleichung ax+b=c
-function loeseGleichung(){
-  const a=Number(document.getElementById("a").value);
-  const b=Number(document.getElementById("b").value);
-  const c=Number(document.getElementById("c").value);
-  const antwort=document.getElementById("antwort");
-  if(a===0){ antwort.innerText="a darf nicht 0 sein."; return;}
-  const x=(c-b)/a; antwort.innerText=`Lösung: x = ${x}`;
-}
-
-// Ableitung ax^n
-function berechneAbleitung(){
-  const a=Number(document.getElementById("coeff").value);
-  const n=Number(document.getElementById("exponent").value);
-  const antwort=document.getElementById("antwort");
-  const newCoeff=a*n;
-  const newExp=n-1;
-  antwort.innerText=`Ableitung: f'(x) = ${newCoeff}x^${newExp}`;
-}
-
-// Integral ax^n
-function berechneIntegral(){
-  const a=Number(document.getElementById("coeffInt").value);
-  const n=Number(document.getElementById("expInt").value);
-  const antwort=document.getElementById("antwort");
-  const newExp=n+1;
-  const newCoeff=a/newExp;
-  antwort.innerText=`Integral: ∫f(x)dx = ${newCoeff}x^${newExp} + C`;
-}
-
-// Physik: Kraft
-function berechneKraft(){
-  const m=Number(document.getElementById("m").value);
-  const a_phys=Number(document.getElementById("a_phys").value);
-  const antwort=document.getElementById("antwort");
-  const F=m*a_phys;
-  antwort.innerText=`F = m * a = ${F} N`;
-}
-
-// Chemie
-function chemReaktion(){
-  const s1=document.getElementById("stoff1").value;
-  const s2=document.getElementById("stoff2").value;
-  const antwort=document.getElementById("antwort");
-  if(!s1||!s2){ antwort.innerText="Bitte beide Stoffe eingeben."; return;}
-  antwort.innerText=`Simulation: ${s1} + ${s2} → Produkt(e) (vereinfachte Darstellung)`;
-}
+// Mathe-Funktionen
+function loeseGleichung(key,level){const a=Number(document.getElementById("a").value),b=Number(document.getElementById("b").value),c=Number(document.getElementById("c").value);if(a===0){alert("a darf nicht 0 sein."); return;}alert(`Lösung: x=${(c-b)/a}`); levelAbschliessen(key,level);}
+function berechneAbleitung(key,level){const a=Number(document.getElementById("coeff").value),n=Number(document.getElementById("exponent").value);alert(`Ableitung: f'(x)=${a*n}x^${n-1}`); levelAbschliessen(key,level);}
+function berechneIntegral(key,level){const a=Number(document.getElementById("coeffInt").value),n=Number(document.getElementById("expInt").value);alert(`Integral: ∫f(x)dx=${a/(n+1)}x^${n+1}+C`); levelAbschliessen(key,level);}
+function berechneKraft(key,level){const m=Number(document.getElementById("m").value),a_phys=Number(document.getElementById("a_phys").value);alert(`F=${m*a_phys} N`); levelAbschliessen(key,level);}
+function chemReaktion(key,level){const s1=document.getElementById("stoff1").value,s2=document.getElementById("stoff2").value;if(!s1||!s2){alert("Bitte beide Stoffe eingeben.");return;}alert(`Simulation: ${s1}+${s2} → Produkt(e)`); levelAbschliessen(key,level);}
 </script>
-
 </body>
 </html>
